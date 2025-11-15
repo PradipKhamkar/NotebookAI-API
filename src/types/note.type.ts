@@ -23,6 +23,7 @@ export interface INoteContent {
 interface INote {
   _id: string;
   title: string;
+  summary:string,
   folder?: string;
   transcript: {
     speaker: string;
@@ -32,13 +33,13 @@ interface INote {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
-  source: {
+  sources: {
     type: string;
     link?: string;
     text?: string;
     uploadId?: string
-  };
-  data: INoteContent[]
+  }[];
+  // data: INoteContent[]
   metaData: object;
   messages: IMessage[];
   suggestionQuery: string[]

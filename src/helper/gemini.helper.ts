@@ -22,6 +22,7 @@ const getNotesResponse = async (
 
   while (true) {
     try {
+      
       const res = await geminiClient.models.generateContent({
         model: currentModel,
         config: {

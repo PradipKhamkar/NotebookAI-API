@@ -6,19 +6,18 @@ import { IMessage } from "../types/llm.type";
 const NoteSchema = new Schema<INote>(
   {
     title: { type: String, required: true },
-    source: {
-      type: {
-        type: String,
-        enum: ["youtube", "web", "pdf", "audio", "video"],
-        required: true,
-      },
-      link: { type: String },
-      text: { type: String },
-    },
-    data: {
-      type: Schema.Types.Mixed,
+    summary: {
+      type: String,
       required: true
     },
+    sources: {
+      type: Schema.Types.Mixed,
+      default: [],
+    },
+    // data: {
+    //   type: Schema.Types.Mixed,
+    //   required: true
+    // },
     folder: {
       type: Schema.Types.ObjectId,
       ref: "Folder",

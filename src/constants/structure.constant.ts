@@ -330,7 +330,7 @@
 
 export const responseFormat = {
   "type": "object",
-  "required": ["title", "summary", "key_points", "sections", 'language',"suggestionQuery"],
+  "required": ["title", "summary", "key_points", "sections", 'language', "suggestionQuery"],
   // "if": {
   //   "properties": {
   //     "source_type": {
@@ -470,6 +470,222 @@ export const responseFormat = {
   },
   "additionalProperties": false,
 }
+export const mindMapSchema = {
+  "type": "object",
+  "required": ["title", "nodes"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the mindmap",
+      "maxLength": 100
+    },
+    "nodes": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Node label/title",
+          "maxLength": 100
+        },
+        "children": {
+          "type": "array",
+          "description": "Child nodes",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Node label/title",
+                "maxLength": 100
+              },
+              "children": {
+                "type": "array",
+                "description": "Child nodes",
+                "items": {
+                  "type": "object",
+                  "required": ["name"],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Node label/title",
+                      "maxLength": 100
+                    },
+                    "children": {
+                      "type": "array",
+                      "description": "Child nodes",
+                      "items": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "maxLength": 100
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+};
+export const flashCardSchema = {
+  "type": "object",
+  "required": ["title", "cards"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the flashcard set",
+      "maxLength": 100
+    },
+    "cards": {
+      "type": "array",
+      "description": "Array of flashcards",
+      "items": {
+        "type": "object",
+        "required": ["question", "answer"],
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "The question on the flashcard",
+            "minLength": 5,
+            "maxLength": 300
+          },
+          "answer": {
+            "type": "string",
+            "description": "The answer to the question",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "explanationOfAnswer": {
+            "type": "string",
+            "description": "Optional explanation of the answer",
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 5
+    }
+  },
+  "additionalProperties": false
+};
+export const quizSchema = {
+  "type": "object",
+  "required": ["title", "quiz"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the quiz",
+      "maxLength": 100
+    },
+    "quiz": {
+      "type": "array",
+      "description": "Array of quiz questions",
+      "items": {
+        "type": "object",
+        "required": ["question", "options", "answer", "explanationOfAnswer"],
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "The quiz question",
+            "minLength": 10,
+            "maxLength": 300
+          },
+          "options": {
+            "type": "array",
+            "description": "Array of answer options",
+            "items": {
+              "type": "object",
+              "required": ["serial", "label"],
+              "properties": {
+                "serial": {
+                  "type": "string",
+                  "description": "Option serial (A, B, C, D, etc.)",
+                  "pattern": "^[A-Z]$"
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Option text/label",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 2,
+            "maxItems": 5
+          },
+          "answer": {
+            "type": "string",
+            "description": "Serial letter of the correct answer (A, B, C, D, etc.)",
+            "pattern": "^[A-Z]$"
+          },
+          "explanationOfAnswer": {
+            "type": "string",
+            "description": "Explanation of why this answer is correct",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 5
+    }
+  },
+  "additionalProperties": false
+};
+
+export const responseFormatV2 = {
+  "type": "object",
+  "required": ["title", "summary", "language", "suggestionQuery"],
+  "properties": {
+    "source_type": {
+      "type": "string",
+      "enum": ["youtube", "web", "pdf", "audio", "video"],
+      "description": "The type of source this note is generated from"
+    },
+    "title": {
+      "type": "string",
+      "description": "Generate a clear, descriptive title (3-8 words) that captures the main topic",
+      "maxLength": 100
+    },
+    "summary": {
+      "type": "string",
+      "description": "Complete content in Markdown format including title, summary, key points, sections, and all other information. Use proper Markdown syntax with headers (##, ###), lists (-, *), bold (**), italic (*), code blocks (```), etc.",
+      "minLength": 100
+    },
+    "language": {
+      "type": "string",
+      "description": "ISO 639-1 language code of note content generated",
+      "examples": ["en", "es", "fr", "de", "hi", "ja", "ko", "zh", "ar", "pt", "ru", "it"]
+    },
+    "suggestionQuery": {
+      "type": "array",
+      "description": "Generate 3-5 contextual question suggestions based on the note content that users can ask the AI assistant",
+      "items": {
+        "type": "string",
+        "description": "A suggested question or prompt related to the note content",
+        "minLength": 10,
+        "maxLength": 100
+      },
+      "minItems": 3,
+      "maxItems": 5
+    },
+    // quiz: quizSchema,
+    // flashCards: flashCardSchema,
+    // mindMap: mindMapSchema
+  },
+  "additionalProperties": false
+};
 
 export const translate = {
   "type": "object",
@@ -525,5 +741,4 @@ export const translate = {
   "required": ["title", "summary", "key_points", "sections", "source_language", "target_language"],
   "additionalProperties": false
 }
-
-export default { translate }
+export default { translate,responseFormatV2 }
