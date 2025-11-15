@@ -14,6 +14,8 @@ import noteHelper from "../helper/note.helper";
 import { Socket } from "socket.io";
 import socketConstant from "../constants/socket.constant";
 import { IMessage, ISocketResponse } from "../types/llm.type";
+import MaterialModel from "../models/material.model";
+import mongoose from "mongoose";
 
 // const newNote = async (userId: string, payload: INewNotePayload) => {
 //   try {
@@ -60,12 +62,34 @@ import { IMessage, ISocketResponse } from "../types/llm.type";
 
 const getAllNotes = async (userId: string) => {
   try {
-    const notes = await NoteModel.find({ createdBy: userId }).select(
-      "-createdBy"
-    );
-    const folders = await FolderModel.find({ createdBy: userId })
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const notes = await NoteModel.aggregate([
+      { $match: { createdBy: userObjectId } },
+      { $project: { createdBy: 0 } },
+
+      {
+        $lookup: {
+          from: "materials",
+          let: { noteId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$noteId", "$$noteId"] }
+              }
+            },
+            { $match: { createdBy: userObjectId } },
+            { $project: { createdBy: 0 } }
+          ],
+          as: "materials"
+        }
+      }
+    ]);
+
+    const folders = await FolderModel.find({ createdBy: userObjectId })
       .select("-createdBy")
       .sort({ order: 1 });
+
     return { notes, folders };
   } catch (error) {
     throw error;
@@ -327,7 +351,6 @@ const newNote = async (userId: string, payload: INewNotePayload) => {
     throw error;
   }
 };
-
 export default {
   newNote,
   getAllNotes,

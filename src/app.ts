@@ -13,11 +13,13 @@ import Authenticate from "./middleware/Authenticate";
 import fileRoute from "./routes/file.route";
 import folderRoute from "./routes/folder.route";
 import purchaseRoute from "./routes/purchase.route";
+import materialRoute from "./routes/material.route";
 
 app.use('/note', Authenticate, noteRoute);
 app.use('/auth', authRoute);
 app.use('/file', Authenticate, fileRoute);
 app.use('/folder', Authenticate, folderRoute);
 app.use('/purchase', Authenticate, purchaseRoute);
+app.use('/material', Authenticate, materialRoute);
 
 export default httpServer;

@@ -470,7 +470,7 @@ export const responseFormat = {
   },
   "additionalProperties": false,
 }
-export const mindMapSchema = {
+export const mindMap = {
   "type": "object",
   "required": ["title", "nodes"],
   "properties": {
@@ -537,7 +537,7 @@ export const mindMapSchema = {
   },
   "additionalProperties": false
 };
-export const flashCardSchema = {
+export const flashCard = {
   "type": "object",
   "required": ["title", "cards"],
   "properties": {
@@ -578,7 +578,7 @@ export const flashCardSchema = {
   },
   "additionalProperties": false
 };
-export const quizSchema = {
+export const quiz = {
   "type": "object",
   "required": ["title", "quiz"],
   "properties": {
@@ -741,4 +741,4 @@ export const translate = {
   "required": ["title", "summary", "key_points", "sections", "source_language", "target_language"],
   "additionalProperties": false
 }
-export default { translate,responseFormatV2 }
+export default { translate,responseFormatV2,quiz,mindMap,flashCard }
