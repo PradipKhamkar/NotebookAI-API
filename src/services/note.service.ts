@@ -60,11 +60,11 @@ import mongoose from "mongoose";
 //   }
 // };
 
-const getAllNotes = async (userId: string) => {
+const getAllNotes = async (userId:string) => {
   try {
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    const notes = await NoteModel.aggregate([
+    let notes = await NoteModel.aggregate([
       { $match: { createdBy: userObjectId } },
       { $project: { createdBy: 0 } },
 
@@ -79,12 +79,24 @@ const getAllNotes = async (userId: string) => {
               }
             },
             { $match: { createdBy: userObjectId } },
-            { $project: { createdBy: 0 } }
+
+            // ⭐ Only send id, type, and data.title
+            {
+              $project: {
+                _id: 1,
+                type: 1,
+                "data.title": 1
+              }
+            }
           ],
           as: "materials"
         }
       }
     ]);
+
+    notes = notes.map((n) =>
+      n?.source ? { ...n, sources: [n.source] } : n
+    );
 
     const folders = await FolderModel.find({ createdBy: userObjectId })
       .select("-createdBy")
@@ -344,7 +356,7 @@ const newNote = async (userId: string, payload: INewNotePayload) => {
       sources: [notesData.sources],
       createdBy: userId,
     });
-    console.log("newNote", newNote);
+    console.log("newNote", newNote,notesData);
     return newNote;
   } catch (error) {
     console.log("error in note creation", error);

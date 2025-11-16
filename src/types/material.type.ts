@@ -10,11 +10,20 @@ interface IQuiz {
    }[]
 }
 
+interface IFlashCard {
+   title:string;
+   cards:{
+      question:string;
+      answer:string;
+      explanationOfAnswer:string
+   }[]
+}
+
 interface IMaterial {
    _id: string;
    noteId:any,
    type: MaterialType,
-   data: IQuiz;
+   data: IQuiz | IFlashCard;
    createdAt: string;
    updatedAt: string;
    createdBy: string;

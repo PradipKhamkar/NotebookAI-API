@@ -15,7 +15,7 @@ const add = async (noteId: string, userId: string, type: MaterialType) => {
       const data = await geminiHelper.getNotesResponse(systemPrompt, [message], structureConstant.quiz);
       console.log('data::',JSON.stringify(data));
       const res = await MaterialModel.create({data,noteId,createdBy:userId,type});
-      return {_id:res._id}
+      return {_id:res._id,type:res.type,data:{title:res.data.title}}
    } catch (error) {
       throw error
    }

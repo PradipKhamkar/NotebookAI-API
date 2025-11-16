@@ -480,6 +480,12 @@ export const mindMap = {
       "maxLength": 100
     },
     "nodes": {
+      "$ref": "#/$defs/Node"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Node": {
       "type": "object",
       "required": ["name"],
       "properties": {
@@ -492,51 +498,15 @@ export const mindMap = {
           "type": "array",
           "description": "Child nodes",
           "items": {
-            "type": "object",
-            "required": ["name"],
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Node label/title",
-                "maxLength": 100
-              },
-              "children": {
-                "type": "array",
-                "description": "Child nodes",
-                "items": {
-                  "type": "object",
-                  "required": ["name"],
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "Node label/title",
-                      "maxLength": 100
-                    },
-                    "children": {
-                      "type": "array",
-                      "description": "Child nodes",
-                      "items": {
-                        "type": "object",
-                        "required": ["name"],
-                        "properties": {
-                          "name": {
-                            "type": "string",
-                            "maxLength": 100
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/$defs/Node"
           }
         }
-      }
+      },
+      "additionalProperties": false
     }
-  },
-  "additionalProperties": false
+  }
 };
+
 export const flashCard = {
   "type": "object",
   "required": ["title", "cards"],
