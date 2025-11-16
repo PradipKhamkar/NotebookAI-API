@@ -164,7 +164,7 @@ const translateNote = async (
     if (!note) throw new Error("note not found!");
     const { language } = payload;
     const messages = createUserContent(`noteTitle:"${note.title}"\n noteData:"${note.summary}" translate into ${language}.`);
-console.log('language in service:', language);
+
     const { title, suggestionQuery, summary } = await geminiHelper.getNotesResponse(promptConstant.translateNote, [messages], structureConstant.responseFormatV2);
     const newNote = await NoteModel.create({
       title,
