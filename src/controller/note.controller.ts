@@ -52,4 +52,16 @@ const translateNote = async (request: Request, res: Response) => {
   }
 }
 
-export default { getAllNotes,updateNote,deleteNote,translateNote }
+const convertOldNoteToNew = async (request: Request, res: Response) => {
+  try {
+    // @ts-ignore
+    const userId = request.userId
+    const note = await noteService.convertOldNoteToNew(request.body.noteId,userId);
+    successResponse(res, "Note Updated Successfully!", note, 200);
+  } catch (error: any) {
+    console.log('Error In Convert Old Note To New', error)
+    errorResponse(res, error?.message || "Failed To Convert Old Note To New")
+  }
+}
+
+export default { getAllNotes,updateNote,deleteNote,translateNote,convertOldNoteToNew }

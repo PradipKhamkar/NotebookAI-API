@@ -1,6 +1,7 @@
 import {
   INewNotePayload,
   INote,
+  INoteContent,
   INoteTranslatePayload,
 } from "../types/note.type";
 import geminiHelper from "../helper/gemini.helper";
@@ -172,10 +173,10 @@ const translateNote = async (
       suggestionQuery,
       summary,
       createdBy: userId,
-      folder:note.folder,
+      folder: note.folder,
       language: language,
     });
-    
+
     return newNote;
   } catch (error) {
     throw error;
@@ -379,6 +380,106 @@ const newNote = async (userId: string, payload: INewNotePayload) => {
   }
 };
 
+const convertOldNoteToNew = async (noteId: string, userId: string) => {
+  try {
+    const note = await NoteModel.findOne({ createdBy: userId, _id: noteId }).lean();
+    if (!note) throw new Error("note not found!");
+    // @ts-ignore
+    const noteData = note?.data as INoteContent[];
+    const createdNote = [];
+
+    if (noteData && noteData.length > 0) {
+      for (let item of noteData) {
+        const { content, language } = item;
+        
+        // System prompt for markdown conversion
+        const system = `You are a note formatting assistant. Your task is to convert structured note data into a single, comprehensive markdown document.
+
+CRITICAL RULES:
+1. DO NOT modify, rephrase, or change ANY of the original content text
+2. DO NOT translate - maintain the original language: ${language}
+3. ONLY convert the structure into proper markdown format
+4. Use the EXACT words and phrases from the original content
+5. Combine all sections into ONE complete markdown document
+6. Use proper markdown syntax: headers (##, ###), bold (**), lists (-, *), etc.
+7. Structure: Title → Summary → Key Points → Detailed Sections
+8. Keep all original information intact - no additions, no omissions`;
+
+        // User message with the actual note data
+        const messages = createUserContent(`Convert the following structured note into a single markdown document. Use EXACT original text without any modifications.
+
+**Note Title:** "${note.title}"
+**Language:** ${language}
+
+**Original Summary:**
+${content.summary}
+
+**Original Key Points:**
+${content.keyPoints.map((point, idx) => `${idx + 1}. ${point}`).join('\n')}
+
+**Original Sections:**
+${content.sections.map((section, idx) => `
+Section ${idx + 1}: ${section.heading}
+${section.content}
+`).join('\n---\n')}
+
+**Task:**
+Create a single markdown document with this structure:
+
+## [Title from original]
+
+**Summary**
+[Original summary text in markdown]
+
+**Key Points**
+- [First key point - exact original text]
+- [Second key point - exact original text]
+- [Continue with all key points]
+
+### [First Section Heading]
+[First section content in markdown format]
+
+### [Second Section Heading]
+[Second section content in markdown format]
+
+[Continue with all sections...]
+
+**Requirements:**
+- Return JSON with: title, summary (complete markdown document), language, suggestionQuery
+- The summary field must contain the ENTIRE note in markdown format
+- Use exact original text in ${language} language
+- Generate 3-5 suggestion queries based on the note's topic
+- DO NOT translate or modify any content`);
+
+        const { summary, suggestionQuery, title, language: detectedLang } = await geminiHelper.getNotesResponse(
+          system, 
+          [messages], 
+          structureConstant.responseFormatV2
+        );
+        
+        const createNewNote = await NoteModel.create({
+          title,
+          // @ts-ignore
+          sources: [note.source],
+          suggestionQuery,
+          summary,
+          createdBy: userId,
+          language: detectedLang || language,
+          messages: note.messages,
+          folder: note.folder,
+          transcript: note.transcript,
+          metaData: note?.metaData,
+        });
+        createdNote.push(createNewNote);
+      }
+    }
+    await NoteModel.findByIdAndDelete({ _id: noteId, createdBy: userId });
+    return createdNote;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   newNote,
   getAllNotes,
@@ -386,4 +487,5 @@ export default {
   deleteNote,
   translateNote,
   askNote,
+  convertOldNoteToNew
 };

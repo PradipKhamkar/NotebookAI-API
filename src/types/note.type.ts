@@ -23,7 +23,7 @@ export interface INoteContent {
 interface INote {
   _id: string;
   title: string;
-  summary:string,
+  summary: string,
   folder?: string;
   transcript: {
     speaker: string;
@@ -39,16 +39,16 @@ interface INote {
     text?: string;
     uploadId?: string
   }[];
-  // data: INoteContent[]
+  data?: INoteContent[]
   metaData: object;
   messages: IMessage[];
   suggestionQuery: string[];
-  language:string;
+  language: string;
 }
 
 interface INoteTranslatePayload {
   noteId: string;
-  language:string
+  language: string
 }
 
 type TSource = "youtube" | "web" | "pdf" | "audio" | "video";

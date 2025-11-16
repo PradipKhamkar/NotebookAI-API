@@ -6,5 +6,6 @@ route.get('/', noteController.getAllNotes);
 route.put('/', noteController.updateNote);
 route.delete('/:id', noteController.deleteNote);
 route.post('/translate', noteController.translateNote);
+route.post('/convert-old-to-new', noteController.convertOldNoteToNew);
 
 export default route
