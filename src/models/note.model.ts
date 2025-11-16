@@ -37,6 +37,10 @@ const NoteSchema = new Schema<INote>(
     suggestionQuery: {
       type: Schema.Types.Mixed,
       default: [],
+    },
+    language:{
+      type: String,
+      default: "original"
     }
   },
   { timestamps: true }

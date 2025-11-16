@@ -42,15 +42,13 @@ interface INote {
   // data: INoteContent[]
   metaData: object;
   messages: IMessage[];
-  suggestionQuery: string[]
+  suggestionQuery: string[];
+  language:string;
 }
 
 interface INoteTranslatePayload {
   noteId: string;
-  data: {
-    targetLanguage: string;
-    sourceLanguage: string;
-  }
+  language:string
 }
 
 type TSource = "youtube" | "web" | "pdf" | "audio" | "video";

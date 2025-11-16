@@ -7,15 +7,12 @@ import geminiHelper from "../helper/gemini.helper";
 import promptConstant from "../constants/prompt.constant";
 import { NoteModel } from "../models/note.model";
 import FolderModel from "../models/folder.model";
-import structureConstant, {
-  responseFormat,
-} from "../constants/structure.constant";
-import noteHelper from "../helper/note.helper";
+import structureConstant from "../constants/structure.constant";
 import { Socket } from "socket.io";
 import socketConstant from "../constants/socket.constant";
 import { IMessage, ISocketResponse } from "../types/llm.type";
-import MaterialModel from "../models/material.model";
 import mongoose from "mongoose";
+import { createUserContent } from "@google/genai";
 
 // const newNote = async (userId: string, payload: INewNotePayload) => {
 //   try {
@@ -60,7 +57,7 @@ import mongoose from "mongoose";
 //   }
 // };
 
-const getAllNotes = async (userId:string) => {
+const getAllNotes = async (userId: string) => {
   try {
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
@@ -75,8 +72,8 @@ const getAllNotes = async (userId:string) => {
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ["$noteId", "$$noteId"] }
-              }
+                $expr: { $eq: ["$noteId", "$$noteId"] },
+              },
             },
             { $match: { createdBy: userObjectId } },
 
@@ -85,18 +82,16 @@ const getAllNotes = async (userId:string) => {
               $project: {
                 _id: 1,
                 type: 1,
-                "data.title": 1
-              }
-            }
+                "data.title": 1,
+              },
+            },
           ],
-          as: "materials"
-        }
-      }
+          as: "materials",
+        },
+      },
     ]);
 
-    notes = notes.map((n) =>
-      n?.source ? { ...n, sources: [n.source] } : n
-    );
+    notes = notes.map((n) => (n?.source ? { ...n, sources: [n.source] } : n));
 
     const folders = await FolderModel.find({ createdBy: userObjectId })
       .select("-createdBy")
@@ -114,35 +109,31 @@ const updateNote = async (
   userId: string
 ) => {
   try {
-    // const setOperations: any = {};
-    // const arrayFilters: any[] = [];
+    const setOperations: any = {};
+    const restrictedFields = [
+      "_id",
+      "createdBy",
+      "updatedAt",
+      "createdAt",
+      "__v",
+    ];
+    // handle other top-level fields dynamically
+    Object.entries(payload).forEach(([key, value]) => {
+      if (!restrictedFields.includes(key)) {
+        setOperations[key] = value;
+      }
+    });
 
-    // // handle `data` updates (translations)
-    // if (payload.data && Array.isArray(payload.data)) {
-    //   payload.data.forEach((entry, i) => {
-    //     setOperations[`data.$[elem${i}].content`] = entry.content;
-    //     arrayFilters.push({ [`elem${i}.language`]: entry.language });
-    //   });
-    // }
+    const note = await NoteModel.findOneAndUpdate(
+      { createdBy: userId, _id: noteId },
+      { $set: setOperations },
+      {
+        new: true,
+      }
+    );
 
-    // // handle other top-level fields dynamically
-    // Object.entries(payload).forEach(([key, value]) => {
-    //   if (key !== "data" && key !== "_id") {
-    //     setOperations[key] = value;
-    //   }
-    // });
-
-    // const note = await NoteModel.findOneAndUpdate(
-    //   { createdBy: userId, _id: noteId },
-    //   { $set: setOperations },
-    //   {
-    //     new: true,
-    //     arrayFilters: arrayFilters.length > 0 ? arrayFilters : undefined,
-    //   }
-    // );
-
-    // if (!note) throw new Error("Note not found!");
-    // return note;
+    if (!note) throw new Error("Note not found!");
+    return note;
   } catch (error) {
     throw error;
   }
@@ -165,6 +156,30 @@ const translateNote = async (
   payload: INoteTranslatePayload,
   userId: string
 ) => {
+  try {
+    const note = await NoteModel.findOne({
+      _id: payload.noteId,
+      createdBy: userId,
+    });
+    if (!note) throw new Error("note not found!");
+    const { language } = payload;
+    const messages = createUserContent(`noteTitle:"${note.title}"\n noteData:"${note.summary}" translate into ${language}.`);
+console.log('language in service:', language);
+    const { title, suggestionQuery, summary } = await geminiHelper.getNotesResponse(promptConstant.translateNote, [messages], structureConstant.responseFormatV2);
+    const newNote = await NoteModel.create({
+      title,
+      sources: note.sources,
+      suggestionQuery,
+      summary,
+      createdBy: userId,
+      folder:note.folder,
+      language: language,
+    });
+    
+    return newNote;
+  } catch (error) {
+    throw error;
+  }
   // try {
   //   const note = await NoteModel.findOne({
   //     _id: payload.noteId,
@@ -356,13 +371,14 @@ const newNote = async (userId: string, payload: INewNotePayload) => {
       sources: [notesData.sources],
       createdBy: userId,
     });
-    console.log("newNote", newNote,notesData);
+    console.log("newNote", newNote, notesData);
     return newNote;
   } catch (error) {
     console.log("error in note creation", error);
     throw error;
   }
 };
+
 export default {
   newNote,
   getAllNotes,

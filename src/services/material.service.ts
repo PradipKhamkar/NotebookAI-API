@@ -10,10 +10,17 @@ const add = async (noteId: string, userId: string, type: MaterialType) => {
       const noteInfo = await NoteModel.findById(noteId);
       if (!noteInfo) throw new Error("note not found!");
       const { summary } = noteInfo;
+
+      // system prompt and user message
       let systemPrompt = `generate ${type} this is summary of note ${summary}`;
       const message = createUserContent(`generate ${type} based on my note summary`);
-      const data = await geminiHelper.getNotesResponse(systemPrompt, [message], structureConstant.quiz);
-      console.log('data::',JSON.stringify(data));
+      
+      // structure json based on type
+      let structureJSON:any = structureConstant.quiz;
+      if(type === "flash-card") structureJSON = structureConstant.flashCard;
+      else if(type === "mind-map") structureJSON = structureConstant.mindMap;
+   
+      const data = await geminiHelper.getNotesResponse(systemPrompt, [message],structureJSON);
       const res = await MaterialModel.create({data,noteId,createdBy:userId,type});
       return {_id:res._id,type:res.type,data:{title:res.data.title}}
    } catch (error) {
