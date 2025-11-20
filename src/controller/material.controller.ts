@@ -6,8 +6,9 @@ const add = async (req: Request, res: Response) => {
    try {
       // @ts-ignore
       const userId = req.userId;
-      const { noteId, type } = req.body || {};
-      const results = await materialService.add(noteId, userId, type);
+      const { noteId, type,userInstruction } = req.body || {};
+      console.log("userInstruction",userInstruction);
+      const results = await materialService.add(noteId, userId, type,userInstruction);
       successResponse(res, "created successfully!", results)
    } catch (error: any) {
       errorResponse(res, error?.message)

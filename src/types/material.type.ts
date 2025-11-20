@@ -29,4 +29,10 @@ interface IMaterial {
    createdBy: string;
 }
 
-export { IMaterial, MaterialType }
+interface IMaterialUserInstruction{
+   numberOfContain:"standard" | "fewer" | "more";
+   difficultyLevel:"easy" | "medium" | "hard";
+   instruction:string;
+}
+
+export { IMaterial, MaterialType, IMaterialUserInstruction }

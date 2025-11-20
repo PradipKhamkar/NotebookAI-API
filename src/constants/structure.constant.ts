@@ -608,7 +608,7 @@ export const quiz = {
         },
         "additionalProperties": false
       },
-      "minItems": 5
+      "minItems": 10
     }
   },
   "additionalProperties": false
