@@ -1,5 +1,4 @@
 name: Deploy Node.js TypeScript API to AWS EC2
-
 on:
   push:
     branches: 
@@ -8,7 +7,6 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-
     strategy:
       matrix:
         node-version: [24.x]
@@ -32,15 +30,18 @@ jobs:
         run: |
           touch .env
           echo "${{ secrets.PROD_ENV }}" > .env
-
+          
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
+        run: |
+          # Create SSH directory if it doesn't exist
+          mkdir -p ~/.ssh
+          
+          # Write SSH key to file
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Execute deployment commands via SSH
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/NotebookAI-API
             
             # Pull latest changes
@@ -60,3 +61,7 @@ jobs:
             
             # Show status
             pm2 status
+          EOF
+          
+          # Clean up SSH key
+          rm -f ~/.ssh/deploy_key
