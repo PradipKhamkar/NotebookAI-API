@@ -29,6 +29,7 @@ const getNotesResponse = async (
           systemInstruction: { parts: [{ text: system }] },
           responseJsonSchema: structureOutput,
           responseMimeType: "application/json",
+          
         },
         contents: messages,
       });

@@ -4,6 +4,8 @@ import geminiHelper from "../helper/gemini.helper";
 import { NoteModel } from "../models/note.model";
 import { IMaterialUserInstruction, MaterialType } from "../types/material.type";
 import MaterialModel from "../models/material.model";
+import materialConstant from "../constants/material.constant";
+import promptConstant from "../constants/prompt.constant";
 
 const add = async (noteId: string, userId: string, type: MaterialType,userInstruction: IMaterialUserInstruction) => {
    try {
@@ -12,15 +14,14 @@ const add = async (noteId: string, userId: string, type: MaterialType,userInstru
       const { summary } = noteInfo;
 
       // system prompt and user message
-      let systemPrompt = `generate ${type} this is summary of note ${summary}`;
-      const message = createUserContent(`generate ${type} based on my note summary and user instruction: ${userInstruction.instruction} level of difficulty: ${userInstruction.difficultyLevel} number of content: ${userInstruction.numberOfContain}`);
+      const message = createUserContent(materialConstant.createStudyMaterialUserMessage(type, summary, userInstruction));
       
       // structure json based on type
       let structureJSON:any = structureConstant.quiz;
       if(type === "flash-card") structureJSON = structureConstant.flashCard;
       else if(type === "mind-map") structureJSON = structureConstant.mindMap;
    
-      const data = await geminiHelper.getNotesResponse(systemPrompt, [message],structureJSON);
+      const data = await geminiHelper.getNotesResponse(promptConstant.STUDY_MATERIAL_SYSTEM_PROMPT, [message],structureJSON);
       const res = await MaterialModel.create({data,noteId,createdBy:userId,type});
       return {_id:res._id,type:res.type,data:{title:res.data.title}}
    } catch (error) {
