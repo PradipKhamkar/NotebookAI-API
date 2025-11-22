@@ -17,6 +17,8 @@ const structure_constant_1 = __importDefault(require("../constants/structure.con
 const gemini_helper_1 = __importDefault(require("../helper/gemini.helper"));
 const note_model_1 = require("../models/note.model");
 const material_model_1 = __importDefault(require("../models/material.model"));
+const material_constant_1 = __importDefault(require("../constants/material.constant"));
+const prompt_constant_1 = __importDefault(require("../constants/prompt.constant"));
 const add = (noteId, userId, type, userInstruction) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const noteInfo = yield note_model_1.NoteModel.findById(noteId);
@@ -24,15 +26,14 @@ const add = (noteId, userId, type, userInstruction) => __awaiter(void 0, void 0,
             throw new Error("note not found!");
         const { summary } = noteInfo;
         // system prompt and user message
-        let systemPrompt = `generate ${type} this is summary of note ${summary}`;
-        const message = (0, genai_1.createUserContent)(`generate ${type} based on my note summary and user instruction: ${userInstruction.instruction} level of difficulty: ${userInstruction.difficultyLevel} number of content: ${userInstruction.numberOfContain}`);
+        const message = (0, genai_1.createUserContent)(material_constant_1.default.createStudyMaterialUserMessage(type, summary, userInstruction));
         // structure json based on type
         let structureJSON = structure_constant_1.default.quiz;
         if (type === "flash-card")
             structureJSON = structure_constant_1.default.flashCard;
         else if (type === "mind-map")
             structureJSON = structure_constant_1.default.mindMap;
-        const data = yield gemini_helper_1.default.getNotesResponse(systemPrompt, [message], structureJSON);
+        const data = yield gemini_helper_1.default.getNotesResponse(prompt_constant_1.default.STUDY_MATERIAL_SYSTEM_PROMPT, [message], structureJSON);
         const res = yield material_model_1.default.create({ data, noteId, createdBy: userId, type });
         return { _id: res._id, type: res.type, data: { title: res.data.title } };
     }

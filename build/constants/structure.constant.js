@@ -530,7 +530,7 @@ exports.flashCard = {
                         "type": "string",
                         "description": "The answer to the question",
                         "minLength": 5,
-                        "maxLength": 500
+                        "maxLength": 100
                     },
                     "explanationOfAnswer": {
                         "type": "string",
@@ -612,7 +612,7 @@ exports.quiz = {
 };
 exports.responseFormatV2 = {
     "type": "object",
-    "required": ["title", "summary", "language", "suggestionQuery"],
+    "required": ["source_type", "title", "detailsNote", "language", "suggestionQuery"],
     "properties": {
         "source_type": {
             "type": "string",
@@ -624,31 +624,28 @@ exports.responseFormatV2 = {
             "description": "Generate a clear, descriptive title (3-8 words) that captures the main topic",
             "maxLength": 100
         },
-        "summary": {
+        "detailsNote": {
             "type": "string",
-            "description": "Complete content in Markdown format including title, summary, key points, sections, and all other information. Use proper Markdown syntax with headers (##, ###), lists (-, *), bold (**), italic (*), code blocks (```), etc.",
-            "minLength": 100
+            "description": "Complete comprehensive notes in Markdown format. Must include: document title (# heading), overview section (## 📋 Overview), key takeaways (## 🎯 Key Takeaways), detailed notes with multiple sections (## 📚 Detailed Notes with ### subsections), practical applications (## 💡 Practical Applications), and important definitions (## 🔑 Key Concepts). Use proper Markdown: headers (##, ###, ####), lists (-, 1.), bold (**text**), italic (*text*), code (`code`), blockquotes (>), tables, and horizontal rules (---). Minimum 500 words for comprehensive coverage.",
+            "minLength": 500
         },
         "language": {
             "type": "string",
-            "description": "ISO 639-1 language code of note content generated",
+            "description": "ISO 639-1 language code of the source content",
             "examples": ["en", "es", "fr", "de", "hi", "ja", "ko", "zh", "ar", "pt", "ru", "it"]
         },
         "suggestionQuery": {
             "type": "array",
-            "description": "Generate 3-5 contextual question suggestions based on the note content that users can ask the AI assistant",
+            "description": "Generate 3-5 contextual follow-up questions that help users explore the topic deeper",
             "items": {
                 "type": "string",
-                "description": "A suggested question or prompt related to the note content",
-                "minLength": 10,
-                "maxLength": 100
+                "description": "An intelligent question that encourages deeper understanding or practical application",
+                "minLength": 15,
+                "maxLength": 120
             },
             "minItems": 3,
             "maxItems": 5
-        },
-        // quiz: quizSchema,
-        // flashCards: flashCardSchema,
-        // mindMap: mindMapSchema
+        }
     },
     "additionalProperties": false
 };
